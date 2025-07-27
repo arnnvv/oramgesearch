@@ -49,44 +49,53 @@ export async function validateSessionToken(
     await sha256(new TextEncoder().encode(token)),
   );
 
-  const sessionResult = await db.query<{ user_id: number; expires_at: Date }>(
-    `SELECT user_id, expires_at FROM orange_sessions WHERE id = $1 LIMIT 1`,
+  const sessionAndUserResult = await db.query(
+    `
+      SELECT
+        s.user_id,
+        s.expires_at,
+        u.id as user_id_from_users_table,
+        u.google_id,
+        u.email,
+        u.name,
+        u.picture
+      FROM orange_sessions s
+      JOIN orange_users u ON s.user_id = u.id
+      WHERE s.id = $1 LIMIT 1
+    `,
     [sessionId],
   );
 
-  if (sessionResult.rowCount === 0) {
+  if (sessionAndUserResult.rowCount === 0) {
     return { session: null, user: null };
   }
 
-  const { user_id, expires_at } = sessionResult.rows[0];
+  const data = sessionAndUserResult.rows[0];
   const now = Date.now();
-  const expiresAtMs = expires_at.getTime();
+  const expiresAtMs = data.expires_at.getTime();
 
   if (now >= expiresAtMs) {
-    db.query("DELETE FROM orange_sessions WHERE id = $1", [sessionId]);
+    await db.query("DELETE FROM orange_sessions WHERE id = $1", [sessionId]);
     return { session: null, user: null };
   }
 
-  const userResult = await db.query<User>(
-    `SELECT id, google_id, email, name, picture FROM orange_users WHERE id = $1 LIMIT 1`,
-    [user_id],
-  );
+  const user: User = {
+    id: data.user_id_from_users_table,
+    google_id: data.google_id,
+    email: data.email,
+    name: data.name,
+    picture: data.picture,
+  };
 
-  if (userResult.rowCount === 0) {
-    db.query("DELETE FROM orange_sessions WHERE id = $1", [sessionId]);
-    return { session: null, user: null };
-  }
-
-  const user = userResult.rows[0];
   const session: Session = {
     id: sessionId,
     user_id: user.id,
-    expires_at,
+    expires_at: data.expires_at,
   };
 
   const refreshThresholdMs = SESSION_REFRESH_THRESHOLD_SECONDS * 1000;
   if (now >= expiresAtMs - refreshThresholdMs) {
-    const newExpiresAt = new Date(now + 1000 * 60 * 60 * 24 * 30);
+    const newExpiresAt = new Date(now + SESSION_MAX_AGE_SECONDS * 1000);
     await db.query("UPDATE orange_sessions SET expires_at = $1 WHERE id = $2", [
       newExpiresAt,
       session.id,
