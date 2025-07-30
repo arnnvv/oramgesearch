@@ -6,7 +6,8 @@ import {
 } from "@/lib/constants";
 import { google } from "@/lib/oauth";
 import { ObjectParser } from "@/lib/parser";
-import { globalGETRateLimit } from "@/lib/requests";
+import { getClientIp, globalGETRateLimit } from "@/lib/requests";
+import { associateAnonymousSearches } from "@/lib/search";
 import { upsertUserFromGoogleProfile } from "@/lib/user";
 import { createSession, generateSessionToken } from "@/lib/auth";
 import { setSessionTokenCookie } from "@/lib/session";
@@ -65,6 +66,11 @@ export async function GET(request: Request): Promise<Response> {
       name,
       picture,
     );
+
+    const ipAddress = await getClientIp();
+    if (ipAddress) {
+      await associateAnonymousSearches(user.id, ipAddress);
+    }
 
     const sessionToken = generateSessionToken();
     const newSession = await createSession(sessionToken, user.id);

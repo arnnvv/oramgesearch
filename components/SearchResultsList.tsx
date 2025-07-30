@@ -2,7 +2,6 @@
 
 import type { SearchResult } from "@/lib/db/types";
 import type { JSX } from "react";
-import React from "react";
 
 interface SearchResultsListProps {
   query: string;
