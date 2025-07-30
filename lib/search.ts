@@ -11,9 +11,11 @@ export async function recordSearch(params: {
     console.warn("Cannot record search without user_id or ip_address.");
     return;
   }
+  const cleanedQuery = query.trim().toLowerCase();
+
   await db.query(
     "INSERT INTO search_history (user_id, ip_address, query) VALUES ($1, $2, $3)",
-    [userId ?? null, ipAddress, query],
+    [userId ?? null, ipAddress, cleanedQuery],
   );
 }
 
@@ -21,7 +23,7 @@ export async function countAnonymousSearches(
   ipAddress: string,
 ): Promise<number> {
   const result = await db.query(
-    "SELECT COUNT(*) FROM search_history WHERE ip_address = $1 AND user_id IS NULL",
+    "SELECT COUNT(DISTINCT query) FROM search_history WHERE ip_address = $1 AND user_id IS NULL",
     [ipAddress],
   );
   return parseInt(result.rows[0].count, 10);

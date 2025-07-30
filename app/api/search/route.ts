@@ -40,11 +40,17 @@ export async function GET(request: NextRequest): Promise<Response> {
     );
   }
 
+  const cleanedQuery = query.trim().toLowerCase();
   const { user } = await getCurrentSession();
   const ipAddress = await getClientIp();
 
-  if (!user) {
-    if (ipAddress) {
+  if (!user && ipAddress) {
+    const existingSearch = await db.query(
+      "SELECT 1 FROM search_history WHERE ip_address = $1 AND query = $2 AND user_id IS NULL LIMIT 1",
+      [ipAddress, cleanedQuery],
+    );
+
+    if (existingSearch.rowCount === 0) {
       const searchCount = await countAnonymousSearches(ipAddress);
       if (searchCount >= ANONYMOUS_SEARCH_LIMIT) {
         return new Response(
@@ -60,18 +66,16 @@ export async function GET(request: NextRequest): Promise<Response> {
           },
         );
       }
-    } else {
-      console.warn(
-        "Could not determine IP address for anonymous user. Search limit not enforced.",
-      );
     }
   }
 
-  await recordSearch({
-    userId: user?.id,
-    ipAddress: ipAddress,
-    query,
-  });
+  if (ipAddress || user) {
+    await recordSearch({
+      userId: user?.id,
+      ipAddress: ipAddress,
+      query: cleanedQuery,
+    });
+  }
 
   try {
     const sql = `
