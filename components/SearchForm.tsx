@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { forwardRef } from "react";
+import type { InputHTMLAttributes } from "react";
 
-export function SearchInput() {
-  const inputRef = useRef<HTMLInputElement>(null);
+type Props = InputHTMLAttributes<HTMLInputElement>;
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  return (
+export const SearchInput = forwardRef<HTMLInputElement, Props>(
+  ({ className = "", ...props }, ref) => (
     <input
-      ref={inputRef}
+      ref={ref}
       type="text"
       name="q"
-      placeholder="Start typing to search..."
-      className="flex-1 bg-transparent text-gray-700 placeholder-gray-500 text-lg outline-none"
+      className={`search-input ${className}`}
+      {...props}
     />
-  );
-}
+  ),
+);
+SearchInput.displayName = "SearchInput";

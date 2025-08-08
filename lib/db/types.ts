@@ -41,6 +41,7 @@ export type UrlContent = {
   description: string | null;
   content: string | null;
   search_vector: string;
+  embedding: number[] | null;
 };
 
 export type UrlEdge = {

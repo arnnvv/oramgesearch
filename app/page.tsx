@@ -9,28 +9,28 @@ export default async function ProfileContent(): Promise<JSX.Element> {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-200 via-blue-200 to-indigo-300" />
-      <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent" />
-
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
-        <div className="w-full max-w-2xl mb-16">
-          <div className="relative">
-            <form
-              action="/search"
-              method="GET"
-              className="backdrop-blur-2xl bg-white/15 rounded-3xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] p-4"
-            >
-              <div className="backdrop-blur-xl bg-white/25 rounded-2xl border border-white/30 shadow-[0_4px_16px_0_rgba(31,38,135,0.2)] p-4 transition-all duration-300 hover:bg-white/30 hover:shadow-[0_8px_24px_0_rgba(31,38,135,0.3)]">
-                <div className="flex items-center space-x-4">
-                  <Search className="text-gray-600 w-6 h-6 flex-shrink-0 opacity-70" />
-                  <SearchInput />
-                </div>
-              </div>
-            </form>
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-purple-400/20 via-blue-400/20 to-indigo-400/20 blur-xl -z-10 opacity-50" />
+    <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,#f1eff9_0%,#e3e1f4_40%,#d5e4f6_75%,#c7dcf4_100%)]">
+      <div className="flex flex-col items-center gap-8">
+        <form action="/search" method="GET" className="relative">
+          <span
+            aria-hidden
+            className="
+      absolute inset-[-12px] rounded-[18px]
+      border border-white/35
+      bg-white/20
+      backdrop-blur-[10px]
+      pointer-events-none
+      -z-10
+    "
+          />
+          <div className="flex items-center gap-4 bg-white rounded-[16px] px-7 py-5 min-w-[500px]">
+            <Search className="w-[22px] h-[22px] opacity-60 text-current" />
+            <SearchInput
+              placeholder="What would you like to find today?"
+              className="flex-1 text-[18px] placeholder-[#999] text-[#666] focus:outline-none bg-transparent border-0"
+            />
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
