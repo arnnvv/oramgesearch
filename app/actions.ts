@@ -6,7 +6,7 @@ import {
   validateSessionToken,
 } from "@/lib/auth";
 import { globalPOSTRateLimit } from "@/lib/requests";
-import { deleteSessionTokenCookie } from "@/lib/session";
+import { deleteSessionTokenCookie, setSessionTokenCookie } from "@/lib/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -20,7 +20,11 @@ export const getCurrentSession = cache(
         user: null,
       };
     }
-    return validateSessionToken(token);
+    const { newExpiresAt, ...result } = await validateSessionToken(token);
+    if (newExpiresAt && token) {
+      await setSessionTokenCookie(token, newExpiresAt);
+    }
+    return result;
   },
 );
 
