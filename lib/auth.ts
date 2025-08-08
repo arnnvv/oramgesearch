@@ -43,7 +43,7 @@ export async function createSession(
 
 export async function validateSessionToken(
   token: string,
-): Promise<SessionValidationResult> {
+): Promise<SessionValidationResult & { newExpiresAt?: Date }> {
   "use cache";
   const sessionId = encodeHexLowerCase(
     await sha256(new TextEncoder().encode(token)),
@@ -101,6 +101,7 @@ export async function validateSessionToken(
       session.id,
     ]);
     session.expires_at = newExpiresAt;
+    return { session, user, newExpiresAt };
   }
 
   return { session, user };
