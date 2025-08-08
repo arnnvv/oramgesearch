@@ -15,19 +15,20 @@ export async function getEmbedding(text: string): Promise<number[]> {
           content: {
             parts: [{ text: text }],
           },
-          embedding_config: {
-            task_type: "RETRIEVAL_DOCUMENT",
-            output_dimensionality: 256,
-          },
+          taskType: "RETRIEVAL_QUERY",
+          outputDimensionality: 256,
         }),
       },
     );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    console.log(response);
 
     const result = await response.json();
+
+    if (!response.ok) {
+      const errorMessage =
+        result?.error?.message ?? `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
 
     if (!result.embedding || !result.embedding.values) {
       throw new Error("Invalid embedding response from API");
